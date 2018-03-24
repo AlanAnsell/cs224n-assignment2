@@ -81,9 +81,11 @@ class ParserModel(Model):
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
-        return {self.input_placeholder: inputs_batch,
-                self.labels_placeholder: labels_batch,
-                self.dropout_placeholder: dropout}
+        feed_dict = {self.input_placeholder: inputs_batch,
+                     self.dropout_placeholder: dropout}
+        if labels_batch is not None:
+            feed_dict[self.labels_placeholder] = labels_batch
+        return feed_dict
 
     def add_embedding(self):
         """Adds an embedding layer that maps from input tokens (integers) to vectors and then
@@ -154,8 +156,8 @@ class ParserModel(Model):
         Returns:
             loss: A 0-d tensor (scalar)
         """
-        return tf.nn.softmax_cross_entropy_with_logits(labels=self.labels_placeholder,
-                                                       logits=pred)
+        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
+                labels=self.labels_placeholder, logits=pred))
 
     def add_training_op(self, loss):
         """Sets up the training Ops.
@@ -259,5 +261,5 @@ def main(debug=True):
 
 
 if __name__ == '__main__':
-    main()
+    main(debug=False)
 

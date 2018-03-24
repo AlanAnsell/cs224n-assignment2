@@ -83,13 +83,14 @@ def minibatch_parse(sentences, model, batch_size):
 
     while len(unfinished_parses) > 0:
         n = min(batch_size, len(unfinished_parses))
-        transitions = model.predict(unfinished_parses[-n:])
-        for i in range(1, n+1):
-            parse = unfinished_parses[-i]
+        first_in_batch = len(unfinished_parses) - n
+        transitions = model.predict(unfinished_parses[first_in_batch:])
+        for i in reversed(range(n)):
+            parse = unfinished_parses[first_in_batch + i]
             #print('Stack: %s, Buf: %s: Transition: %s' % (str(parse.stack), str(parse.buffer), transitions[-i]))
-            parse.parse_step(transitions[-i])
+            parse.parse_step(transitions[i])
             if len(parse.stack) == 1 and len(parse.buffer) == 0:
-                unfinished_parses.pop(-i)
+                unfinished_parses.pop(first_in_batch + i)
 
     return [parses[i].dependencies for i in range(len(parses))]
 
